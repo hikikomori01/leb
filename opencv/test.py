@@ -26,7 +26,7 @@ edges = cv2.Canny(erosion, thresh, thresh*2)
 _, contours,hierarchy = cv2.findContours(edges, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 for b,cnt in enumerate(contours):
     if hierarchy[0,b,3] == -1: #<-the mistake might be here
-       approx = cv2.approxPolyDP(cnt,0.015*cv2.arcLength(cnt,True), True)
+       approx = cv2.approxPolyDP(cnt,1*cv2.arcLength(cnt,True), True)
        clr = (255, 0, 0)
        create_graph(approx, clr) #function for drawing the found contours in the new img
        area = cv2.contourArea(cnt)

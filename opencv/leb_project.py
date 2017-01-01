@@ -9,10 +9,10 @@ def color_seg(choice):
         upper_hue = np.array([150])
     elif choice == 'white':
         lower_hue = np.array([0])
-        upper_hue = np.array([0])
+        upper_hue = np.array([255])
     elif choice == 'black':
         lower_hue = np.array([150])
-        upper_hue = np.array([200])
+        upper_hue = np.array([250])
     return lower_hue, upper_hue
 
 def create_graph(vertex, color):
@@ -24,18 +24,20 @@ def create_graph(vertex, color):
 
 
 
+
+
+
 cap = cv2.VideoCapture(0)
+i = 0; all_area = 0; area = 0; area2 = 0
 while (True):
 
     ret, frame = cap.read()
     frame = cv2.flip(frame, 1)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-
-
-
-
-
     chosen_color = 'black'
+    if(i == 1):
+        chosen_color = 'white'
+
     lower_hue, upper_hue = color_seg(chosen_color)
 
     mask = cv2.inRange(gray, lower_hue, upper_hue)
@@ -44,18 +46,29 @@ while (True):
 
     _, thresh1 = cv2.threshold(blurred, 127, 255,
                                cv2.THRESH_BINARY)
-    _, contours, hierarchy = cv2.findContours(thresh1,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+    _, contours, hierarchy = cv2.findContours(thresh1,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)   # W-B fream simple
+
 
     # print(contours)
     # cnt = contours[0]
+
     for b, cnt in enumerate(contours):
         if hierarchy[0, b, 3] == -1:  # <-the mistake might be here
             approx = cv2.approxPolyDP(cnt, 0.001 * cv2.arcLength(cnt, True), True)
             clr = (255, 0, 0)
             create_graph(approx, clr)
             area = cv2.contourArea(cnt)
-            print(area)
-    print("==================")
+            area2 += area
+            if(i == 1):
+                mask2 = mask.copy()
+                i = -1
+                all_area = cv2.contourArea(cnt)
+                print("all area")
+            print( "%d / %d "%(area , all_area))
+            print("=  %d"%area2)
+    print("======== simple area ==========")
+    # print(i)
+
     # break
     #
     # epsilon = 0.1 * cv2.arcLength(cnt, True)
@@ -68,9 +81,12 @@ while (True):
 
     cv2.imshow('frame', frame)
     cv2.imshow('gray', gray)
-    cv2.imshow('mask', mask)
-
-
+    if(i != -1):
+        cv2.imshow('mask', mask)
+    else:
+        cv2.imshow('all', mask)
+    i += 1
+    area2 = 0
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
